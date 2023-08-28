@@ -1,0 +1,67 @@
+Question: How many playerd Mrs. Darling in the 1999 Broadway?
+Expected query: SELECT `COUNT(1999 Broadway)` FROM `1-10312547-1` WHERE `Character` = 'mrs. darling'
+Actual query: select `1999 broadway` from spark_ai_temp_view_2fb7f7 where character = 'mrs. darling'
+Expected result: [1]
+Actual result: ['barbara mcculloh']
+
+
+Question: How many birthdays does Earl Hanley Beshlin have?
+Expected query: SELECT `COUNT(Date of birth)` FROM `1-10284385-1` WHERE `Representative` = 'earl hanley beshlin'
+Actual query: select cast(split(`age (years, days)`, 'years')[0] as int) as birthdays from spark_ai_temp_view_36b4b8 where representative = 'earl hanley beshlin'
+
+
+Question: What year was the championship in Wimbledon (2)?
+Expected query: SELECT `(Year)` FROM `1-1028356-3` WHERE `Championship` = 'wimbledon (2)'
+Actual query: select year from spark_ai_temp_view_2e5e55 where championship = 'wimbledon'
+Expected result: [1990.0]
+Actual result: [Decimal('1988.0')]
+
+
+Question: what is the episode # for title "the yindianapolis 500 / personality problem"
+Expected query: SELECT `(Episode #)` FROM `1-10269427-3` WHERE `Title` = '"the yindianapolis 500 / personality problem"'
+Actual query: select `episode #` from spark_ai_temp_view_ed8252 where title = 'the yindianapolis 500 / personality problem'
+Expected result: [55.0]
+Actual result: []
+
+Question: What year was number 7 built?
+Expected query: SELECT `(Year Built)` FROM `1-1015421-1` WHERE `No. Built` = 7
+Actual query: select `year built` from spark_ai_temp_view_c98948 where `unit nos.` like '%7%'
+Expected result: ['2004']
+Actual result: ['1998–1999', '1998–1999', '1999', '2002', '2000', '2004', '2002', '1999–2001', '2003–2004', '2004–2005', '2001', '2004', '1999–2000', '1999–2000', '2000']
+
+Question: How many scores did Goodman give to "samba / young hearts run free", which was in second place?
+Expected query: SELECT `COUNT(Goodman)` FROM `1-1014319-1` WHERE `Result` = 'second place' AND `Dance/song` = 'samba / young hearts run free'
+Actual query: select goodman from spark_ai_temp_view_8b0ff1 where `dance/song` = 'samba / young hearts run free'
+Expected result: [1]
+Actual result: ['9', '9']
+
+Question: What score did Dixon give to the song "samba / young hearts run free", which was in second place?
+Expected query: SELECT `(Dixon)` FROM `1-1014319-1` WHERE `Dance/song` = 'samba / young hearts run free' AND `Result` = 'second place'
+Actual query: select dixon from spark_ai_temp_view_c04f4f where `dance/song` = 'samba / young hearts run free' and result = '2nd'
+Expected result: ['10']
+Actual result: []
+
+Question: What team is Keith Mccambridge on?
+Expected query: SELECT `(College/junior/club team)` FROM `1-1013129-8` WHERE `Player` = 'keith mccambridge'
+Actual query: select `nhl team` from spark_ai_temp_view_9dd220 where player = 'keith mccambridge'
+Expected result: ['swift current broncos (whl)']
+Actual result: ['calgary flames']
+
+Question: How many 2001 censuses are there on number 13?
+Expected query: SELECT `COUNT(2001 Census)` FROM `1-10138926-1` WHERE `#` = 13
+Actual query: select `2001 census` from spark_ai_temp_view_34f49b where `#` = 13
+Expected result: [1]
+Actual result: [Decimal('252026.0')]
+
+
+Question: How many 2010 estimations have been done in the city of Cremona?
+Expected query: SELECT `COUNT(2010 Est.)` FROM `1-10138926-1` WHERE `City` = 'cremona'
+Actual query: select `2010 est.` from spark_ai_temp_view_494291 where city = 'cremona'
+Expected result: [1]
+Actual result: [Decimal('72147.0')]
+
+Question: What is the total number of votes if Scotland cast 35?
+Expected query: SELECT `COUNT(Scotland)` FROM `1-10128185-2` WHERE `Total` = 35
+Actual query: select total from spark_ai_temp_view_648221 where scotland = 35
+Expected result: [1]
+Actual result: []

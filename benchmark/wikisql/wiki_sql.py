@@ -27,7 +27,7 @@ def generate_sql_statements(table_file):
                 vals = []
                 for val in row:
                     if isinstance(val, str):
-                        val = "'{}'".format(val.lower().replace("'", "''").replace("\\", "\\\\"))
+                        val = "\"{}\"".format(val.lower().replace("\\", "\\\\").replace("\"", "\\\""))
                     else:
                         val = str(float(val))
                     vals.append(val)

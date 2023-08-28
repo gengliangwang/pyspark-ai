@@ -1,0 +1,50 @@
+Question: What's the 2001 census of the region of Abruzzo where the 1871 census is bigger than 51092.0?
+Expected query: SELECT `MIN(2001 Census)` FROM `1-10138926-1` WHERE `Region` = 'abruzzo' AND `1981 Census` > 51092.0
+Actual query: select `2001 census` from spark_ai_temp_view_e79d3f where `1981 census` > 51092.0 and region = 'abruzzo'
+Expected result: [52486.0]
+Actual result: [Decimal('116286.0'), Decimal('68503.0'), Decimal('52486.0')]
+
+Question: Position in nhl team centre are all smaller pick than 243.0
+Expected query: SELECT `(NHL team)` FROM `1-1013129-10` WHERE `Position` = 'centre' AND `Pick` < 243.0
+Actual query: select position, pick from spark_ai_temp_view_8f8d9c where position = 'centre' and pick < 243.0
+Expected result: ['florida panthers']
+Actual result: [Decimal('235.0')]
+
+
+Question: All players are position mark polak.
+Expected query: SELECT `(Position)` FROM `1-1013129-10` WHERE `Player` = 'mark polak'
+Actual query: select * from spark_ai_temp_view_90078a where position = 'mark polak'
+Expected result: ['centre']
+Actual result: []
+
+
+Question: How many starts did Hendrick motorsports have?
+Expected query: SELECT `MIN(Starts)` FROM `1-1012730-1` WHERE `Team(s)` = 'hendrick motorsports'
+Actual query: select sum(starts) from spark_ai_temp_view_6bd5eb where `team(s)` = 'hendrick motorsports'
+Expected result: [31.0]
+Actual result: [Decimal('368.0')]
+
+Question: How many Australians were in the UN commission on Korea?
+Expected query: SELECT `COUNT(Number of Australians involved)` FROM `1-10121127-1` WHERE `UN Operation title` = 'un commission on korea'
+Actual query: select `number of australians involved` from spark_ai_temp_view_548824 where `un operation title` = 'un commission on korea'
+Expected result: [1]
+Actual result: ['2']
+
+Question: What college did the Rookie of the Year from the Columbus Crew attend?
+Expected query: SELECT `(College)` FROM `1-1004033-1` WHERE `Team` = 'columbus crew'
+Actual query: select college from spark_ai_temp_view_6af51e where team = 'columbus crew' and `draft class` = 'rookie of the year'
+Expected result: ['virginia']
+Actual result: []32
+
+Question: Name the number of species with sepal width of 3.4 and sepal length of 5.4
+Expected query: SELECT `COUNT(Species)` FROM `1-10477224-1` WHERE `Sepal width` = '3.4' AND `Sepal length` = '5.4'
+Actual query: select count(distinct species) from spark_ai_temp_view_d0a5f5 where `sepal length` = '5.4' and `sepal width` = '3.4'
+Expected result: [2]
+Actual result: [1]
+
+
+Question: What is the Frequency at the Market/Rank of Burlington - Plattsburgh , Vermont - New York /143?
+Expected query: SELECT `COUNT(Frequency)` FROM `1-10333757-1` WHERE `Market/Rank` = 'burlington - plattsburgh , vermont - new york /143'
+Actual query: select `frequency` from `spark_ai_temp_view_2aed3c` where `market/rank` = 'burlington - plattsburgh , vermont - new york /143'
+Expected result: [1]
+Actual result: ['620 khz']

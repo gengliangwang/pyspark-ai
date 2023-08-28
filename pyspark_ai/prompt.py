@@ -80,7 +80,105 @@ Action: query_validation
 Action Input: SELECT Name, Age FROM spark_ai_temp_view_wl2sdf WHERE Survived = 1 ORDER BY Age DESC LIMIT 1
 Observation: OK
 Thought:I now know the final answer.
-Final Answer: SELECT Name, Age FROM spark_ai_temp_view_wl2sdf WHERE Survived = 1 ORDER BY Age DESC LIMIT 1"""
+Final Answer: SELECT Name, Age FROM spark_ai_temp_view_wl2sdf WHERE Survived = 1 ORDER BY Age DESC LIMIT 1""",
+    """QUESTION: Given a Spark temp view `spark_ai_temp_view_9dd220` with the following columns:
+```
+Pick STRING
+Player STRING
+Position STRING
+Nationality STRING
+NHL team STRING
+College/junior/club team STRING
+```
+/*
+3 rows from spark_ai_temp_view_9dd220 table:
+Pick    Player  Position    Nationality NHL team    College/junior/club team
+183    Jason Boudrias    Forward    Canada   Florida Panthers    Laval Titan (QMJHL)
+184    Brad Englehart   CentreCanada    Anaheim Ducks   Kimball Union Academy (HS-New Hampshire)
+185    Rob Guinn    Defence    Canada   Edmonton Oilers  Newmarket Royals (OHL)
+*/
+Write a Spark SQL query to retrieve from view `spark_ai_temp_view_9dd220`: What team is Keith Mccambridge on?
+Thought: I will query the NHL team column, filtering by Player.
+Action: query_validation
+Action Input: SELECT `NHL team` FROM spark_ai_temp_view_9dd220 WHERE Player = 'Keith Mccambridge'
+Observation: OK
+Thought:I now know the final answer.
+Final Answer: SELECT `NHL team` FROM spark_ai_temp_view_9dd220 WHERE Player = 'Keith Mccambridge'""",
+    """QUESTION: Given a Spark temp view `spark_ai_temp_view_c04f4f` with the following columns:
+```
+Week
+Dance/song
+Horwood
+Goodman
+Dixon
+Tonioli
+Total
+Result
+```
+/*
+3 rows from spark_ai_temp_view_c04f4f table:
+Week    Dance/song    Horwood    Goodman    Dixon    Tonioli    Total    Result
+1	Cha-Cha-Cha / Ain't No Mountain High Enough	7	8	8	8	31	N/A
+2	Foxtrot / She Said	7	8	8	8	31	Safe
+3	Quickstep / Dreaming Of You	8	7	8	8	31	Safe
+*/
+Write a Spark SQL query to retrieve from view `spark_ai_temp_view_c04f4f`: What score did Dixon give to the song "samba / young hearts run free", which was in second place?
+Though: I will query the Dixon column, filtering by `Dance/song` and Result.
+Action: query_validation
+Action Input: SELECT `(Dixon)` FROM `1-1014319-1` WHERE `Dance/song` = 'samba / young hearts run free' AND `Result` = 'second place'
+Observation: OK
+Thought:I now know the final answer.
+Final Answer: SELECT `(Dixon)` FROM `1-1014319-1` WHERE `Dance/song` = 'samba / young hearts run free' AND `Result` = 'second place'""",
+"""QUESTION: Given a Spark temp view `spark_ai_temp_view_34f49b` with the following columns:
+```
+#
+City
+1981 Census
+1991 Census
+2001 Census
+2010 Est.
+Region
+```
+/*
+3 rows from spark_ai_temp_view_34f49b table:
+#    City    1981 Census    1991 Census    2001 Census    2010 Est.    Region
+1	Rome	2840259	2775250	2546804	2761477	Lazio
+2	Milan	1421367	1338033	1242123	1300977	Lombardy
+3	Naples	1040577	1066186	1002619	962003	Campania
+*/
+Write a Spark SQL query to retrieve from view `spark_ai_temp_view_34f49b`: How many 2001 censuses are there on number 13?
+Thought: I will count the 2001 Census column, filtering by #.
+Action: query_validation
+Action Input: SELECT COUNT(`2001 Census`) FROM spark_ai_temp_view_34f49b WHERE `#` = 13
+Observation: OK
+Thought:I now know the final answer.
+Final Answer: SELECT COUNT(`2001 Census`) FROM spark_ai_temp_view_34f49b WHERE `#` = 13""",
+"""QUESTION: Given a Spark temp view `spark_ai_temp_view_sdf210` with the following columns:
+```
+#
+Episode
+Rating
+Share
+Rating/Share (18-49)
+Viewers (millions)
+Rank (Timeslot)
+Rank (Night)
+Rank (Week)
+```
+/*
+3 rows from spark_ai_temp_view_sdf210 table:
+#    Episode    Rating    Share    Rating/Share (18-49)    Viewers (millions)    Rank (Timeslot)    Rank (Night)    Rank (Week)
+1	"Faith"	7.3	12	4.2/12	11.83	1	3	10
+2	"Freedom"	6.0	10	3.6/10	9.38	2	5	11
+3	"Father Figure"	5.3	8	2.8/8	7.82	2	6	TBA
+*/
+Write a Spark SQL query to retrieve from view `spark_ai_temp_view_sdf210`: what is the total number of rank where viewers is 9.38?
+Thought: I will count the `Rank (Timeslot)` column, filtering by `Viewers (millions)`.
+Action: query_validation
+Action Input: SELECT COUNT(`Rank (Timeslot)`) FROM spark_ai_temp_view_sdf210 WHERE `Viewers (millions)` = 9.38
+Observation: OK
+Thought:I now know the final answer.
+Final Answer: SELECT COUNT(`Rank (Timeslot)`) FROM spark_ai_temp_view_sdf210 WHERE `Viewers (millions)` = 9.38""",
 ]
 
 SPARK_SQL_SUFFIX = """\nQuestion: Given a Spark temp view `{view_name}` with the following columns:
