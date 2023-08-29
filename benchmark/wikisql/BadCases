@@ -48,3 +48,16 @@ Expected query: SELECT `COUNT(Frequency)` FROM `1-10333757-1` WHERE `Market/Rank
 Actual query: select `frequency` from `spark_ai_temp_view_2aed3c` where `market/rank` = 'burlington - plattsburgh , vermont - new york /143'
 Expected result: [1]
 Actual result: ['620 khz']
+
+Question: What is the original air date for episode 15 of season 6?
+Expected query: SELECT `(Original air date)` FROM `1-10718868-2` WHERE `No. in season` = 15
+Actual query: select `original air date` from spark_ai_temp_view_a9f163 where `no. in series` = 15 and `no. in season` = 6
+Expected result: ['february9,2006']
+Actual result: []
+
+
+Question: What is the original air date for episode 15 of season 6?
+Expected query: SELECT `(Original air date)` FROM `1-10718868-2` WHERE `No. in season` = 15
+Actual query: select `original air date` from spark_ai_temp_view_a9f163 where `no. in series` = 15 and `no. in season` = 6
+Expected result: ['february9,2006']
+Actual result: []

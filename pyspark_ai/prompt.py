@@ -42,11 +42,9 @@ SQL_PROMPT = PromptTemplate(
 
 
 SPARK_SQL_EXAMPLES = [
-    """QUESTION: Given a Spark temp view `spark_ai_temp_view_93bcf0` with the following columns:
+    """QUESTION: Given a Spark temp view `spark_ai_temp_view_93bcf0` with the following columns and sample rows:
 ```
-Product STRING
-Amount BIGINT
-Country STRING
+CREATE TABLE spark_ai_temp_view_93bcf0(Product STRING, Amount BIGINT, Country STRING)
 ```
 Write a Spark SQL query to retrieve from view `spark_ai_temp_view_93bcf0`: Pivot the fruit table by country and sum the amount for each fruit and country combination.
 Thought: Spark SQL does not support dynamic pivot operations, which are required to transpose the table as requested. I should get all the distinct values of column country.
@@ -58,142 +56,34 @@ Action: query_validation
 Action Input: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR Country IN ('USA', 'Canada', 'Mexico', 'China'))
 Observation: OK
 Thought:I now know the final answer.
-Final Answer: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR Country IN ('USA', 'Canada', 'Mexico', 'China'))"""
-    """QUESTION: Given a Spark temp view `spark_ai_temp_view_wl2sdf` with the following columns:
+Final Answer: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR Country IN ('USA', 'Canada', 'Mexico', 'China'))""",
+"""QUESTION: Given a Spark temp view `spark_ai_temp_view_sdf210` with the following definition and sample rows:
 ```
-PassengerId INT
-Survived INT
-Pclass INT
-Name STRING
-Sex STRING
-Age DOUBLE
-SibSp INT
-Parch INT
-Ticket STRING
-Fare DOUBLE
-Cabin STRING
-Embarked STRING
+CREATE TEMP VIEW `1-11253290-2` AS SELECT * FROM VALUES (1.0,"\"pilot\"","7.1",12.0,"3.8/9","10.72",2.0,8.0,"20"),(2.0,"\"conference call\"","4.3",7.0,"2.3/6","6.16",3.0,8.0,"54"),(3.0,"\"dangerous liaisons\"","3.8",6.0,"2.2/6","5.39",3.0,8.0,"56") as (`#`,`Episode`,`Rating`,`Share`,`Rating/Share (18-49)`,`Viewers (millions)`,`Rank (timeslot)`,`Rank (night)`,`Rank (week)`);
 ```
-Write a Spark SQL query to retrieve from view `spark_ai_temp_view_wl2sdf`: What's the name of the oldest survived passenger?
-Thought: I will query the Name and Age columns, filtering by Survived and ordering by Age in descending order.
-Action: query_validation
-Action Input: SELECT Name, Age FROM spark_ai_temp_view_wl2sdf WHERE Survived = 1 ORDER BY Age DESC LIMIT 1
-Observation: OK
-Thought:I now know the final answer.
-Final Answer: SELECT Name, Age FROM spark_ai_temp_view_wl2sdf WHERE Survived = 1 ORDER BY Age DESC LIMIT 1""",
-    """QUESTION: Given a Spark temp view `spark_ai_temp_view_9dd220` with the following columns:
-```
-Pick STRING
-Player STRING
-Position STRING
-Nationality STRING
-NHL team STRING
-College/junior/club team STRING
-```
-/*
-3 rows from spark_ai_temp_view_9dd220 table:
-Pick    Player  Position    Nationality NHL team    College/junior/club team
-183    Jason Boudrias    Forward    Canada   Florida Panthers    Laval Titan (QMJHL)
-184    Brad Englehart   CentreCanada    Anaheim Ducks   Kimball Union Academy (HS-New Hampshire)
-185    Rob Guinn    Defence    Canada   Edmonton Oilers  Newmarket Royals (OHL)
-*/
-Write a Spark SQL query to retrieve from view `spark_ai_temp_view_9dd220`: What team is Keith Mccambridge on?
-Thought: I will query the NHL team column, filtering by Player.
-Action: query_validation
-Action Input: SELECT `NHL team` FROM spark_ai_temp_view_9dd220 WHERE Player = 'Keith Mccambridge'
-Observation: OK
-Thought:I now know the final answer.
-Final Answer: SELECT `NHL team` FROM spark_ai_temp_view_9dd220 WHERE Player = 'Keith Mccambridge'""",
-    """QUESTION: Given a Spark temp view `spark_ai_temp_view_c04f4f` with the following columns:
-```
-Week
-Dance/song
-Horwood
-Goodman
-Dixon
-Tonioli
-Total
-Result
-```
-/*
-3 rows from spark_ai_temp_view_c04f4f table:
-Week    Dance/song    Horwood    Goodman    Dixon    Tonioli    Total    Result
-1	Cha-Cha-Cha / Ain't No Mountain High Enough	7	8	8	8	31	N/A
-2	Foxtrot / She Said	7	8	8	8	31	Safe
-3	Quickstep / Dreaming Of You	8	7	8	8	31	Safe
-*/
-Write a Spark SQL query to retrieve from view `spark_ai_temp_view_c04f4f`: What score did Dixon give to the song "samba / young hearts run free", which was in second place?
-Though: I will query the Dixon column, filtering by `Dance/song` and Result.
-Action: query_validation
-Action Input: SELECT `(Dixon)` FROM `1-1014319-1` WHERE `Dance/song` = 'samba / young hearts run free' AND `Result` = 'second place'
-Observation: OK
-Thought:I now know the final answer.
-Final Answer: SELECT `(Dixon)` FROM `1-1014319-1` WHERE `Dance/song` = 'samba / young hearts run free' AND `Result` = 'second place'""",
-"""QUESTION: Given a Spark temp view `spark_ai_temp_view_34f49b` with the following columns:
-```
-#
-City
-1981 Census
-1991 Census
-2001 Census
-2010 Est.
-Region
-```
-/*
-3 rows from spark_ai_temp_view_34f49b table:
-#    City    1981 Census    1991 Census    2001 Census    2010 Est.    Region
-1	Rome	2840259	2775250	2546804	2761477	Lazio
-2	Milan	1421367	1338033	1242123	1300977	Lombardy
-3	Naples	1040577	1066186	1002619	962003	Campania
-*/
-Write a Spark SQL query to retrieve from view `spark_ai_temp_view_34f49b`: How many 2001 censuses are there on number 13?
-Thought: I will count the 2001 Census column, filtering by #.
-Action: query_validation
-Action Input: SELECT COUNT(`2001 Census`) FROM spark_ai_temp_view_34f49b WHERE `#` = 13
-Observation: OK
-Thought:I now know the final answer.
-Final Answer: SELECT COUNT(`2001 Census`) FROM spark_ai_temp_view_34f49b WHERE `#` = 13""",
-"""QUESTION: Given a Spark temp view `spark_ai_temp_view_sdf210` with the following columns:
-```
-#
-Episode
-Rating
-Share
-Rating/Share (18-49)
-Viewers (millions)
-Rank (Timeslot)
-Rank (Night)
-Rank (Week)
-```
-/*
-3 rows from spark_ai_temp_view_sdf210 table:
-#    Episode    Rating    Share    Rating/Share (18-49)    Viewers (millions)    Rank (Timeslot)    Rank (Night)    Rank (Week)
-1	"Faith"	7.3	12	4.2/12	11.83	1	3	10
-2	"Freedom"	6.0	10	3.6/10	9.38	2	5	11
-3	"Father Figure"	5.3	8	2.8/8	7.82	2	6	TBA
-*/
-Write a Spark SQL query to retrieve from view `spark_ai_temp_view_sdf210`: what is the total number of rank where viewers is 9.38?
+Write a Spark SQL query to retrieve from view `spark_ai_temp_view_sdf210`: what is the total number of rank where Episode is pilot?
 Thought: I will count the `Rank (Timeslot)` column, filtering by `Viewers (millions)`.
 Action: query_validation
-Action Input: SELECT COUNT(`Rank (Timeslot)`) FROM spark_ai_temp_view_sdf210 WHERE `Viewers (millions)` = 9.38
+Action Input: SELECT COUNT(`Rank (Timeslot)`) FROM spark_ai_temp_view_sdf210 WHERE Episode = '"pilot"'
 Observation: OK
 Thought:I now know the final answer.
-Final Answer: SELECT COUNT(`Rank (Timeslot)`) FROM spark_ai_temp_view_sdf210 WHERE `Viewers (millions)` = 9.38""",
+Final Answer: SELECT COUNT(`Rank (Timeslot)`) FROM spark_ai_temp_view_sdf210 WHERE Episode = '"pilot"'""",
 ]
 
-SPARK_SQL_SUFFIX = """\nQuestion: Given a Spark temp view `{view_name}` with the following columns:
+SPARK_SQL_SUFFIX = """\nQuestion: Given a Spark temp view `{view_name}` with the following definition and sample rows:
 ```
-{columns}
+{ddl}
 ```
-{sample_rows}
 Write a Spark SQL query to retrieve from view `{view_name}`: {desc}
 {agent_scratchpad}"""
 
-SPARK_SQL_PREFIX = """You are an assistant for writing professional Spark SQL queries. Given a question, you need to write a Spark SQL query to answer the question. The result is ALWAYS a Spark SQL query."""
+SPARK_SQL_PREFIX = """You are an assistant for writing professional Spark SQL queries.
+ Given a question, you need to write a Spark SQL query to answer the question. 
+ The result is ALWAYS a Spark SQL query. When selecting the columns and writing filter conditions, You MUST pay attention to the sample rows of the input table for better accuracy."""
 SPARK_SQL_PROMPT = PromptTemplate.from_examples(
     examples=SPARK_SQL_EXAMPLES,
     suffix=SPARK_SQL_SUFFIX,
-    input_variables=["view_name", "columns", "sample_rows", "desc", "agent_scratchpad"],
+    input_variables=["view_name", "ddl", "desc", "agent_scratchpad"],
     prefix=SPARK_SQL_PREFIX,
 )
 

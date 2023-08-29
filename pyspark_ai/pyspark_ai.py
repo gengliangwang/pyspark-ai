@@ -333,12 +333,11 @@ class SparkAI:
         return self._create_dataframe_with_llm(page_content, desc, columns, cache)
 
     def _get_transform_sql_query_from_agent(
-        self, temp_view_name: str, schema: str, sample_rows_str: str, desc: str
+        self, temp_view_name: str, ddl: str, desc: str
     ) -> str:
         llm_result = self._sql_agent.run(
             view_name=temp_view_name,
-            columns=schema,
-            sample_rows=sample_rows_str,
+            ddl=ddl,
             desc=desc,
         )
         sql_query_from_response = AIUtils.extract_code_blocks(llm_result)[0]
@@ -369,6 +368,31 @@ class SparkAI:
             "*/\n"
         )
 
+    def _generate_ddl(self, df, table_name, sample_rows=0):
+        col_defs = []
+
+        for col_name, dtype in df.dtypes:
+            col_defs.append(f"{col_name} {dtype}")
+
+        ddl = f"CREATE TABLE {table_name}({', '.join(col_defs)})"
+
+        if sample_rows > 0:
+            sample_data = df.limit(sample_rows).collect()
+
+            # Format the sample rows as SQL VALUES
+            values_str_list = []
+            for row in sample_data:
+                values_str_list.append(
+                    "(" + ", ".join([f'"{str(item)}"' if item is not None else "NULL" for item in row]) + ")"
+                )
+
+            values_str = ", ".join(values_str_list)
+
+            # Create the CREATE TEMP VIEW statement
+            ddl = f"CREATE TEMP VIEW `{table_name}` AS SELECT * FROM VALUES {values_str} as ({', '.join([f'`{col_name}`' for col_name, _ in df.dtypes])});"
+        print(ddl)
+        return ddl
+
     def _get_transform_sql_query(self, df: DataFrame, desc: str, cache: bool) -> str:
         temp_view_name = random_view_name()
         create_temp_view_code = CodeLogger.colorize_code(
@@ -376,11 +400,12 @@ class SparkAI:
         )
         self.log(f"Creating temp view for the transform:\n{create_temp_view_code}")
         df.createOrReplaceTempView(temp_view_name)
-        schema_str = self._get_df_schema(df)
-        sample_rows_str = self._get_sample_spark_rows(df, temp_view_name)
+        # schema_str = self._get_df_schema(df)
+        # sample_rows_str = self._get_sample_spark_rows(df, temp_view_name)
+        ddl = self._generate_ddl(df, temp_view_name, self._sample_rows_in_table_info)
 
         if cache:
-            cache_key = ReActSparkSQLAgent.cache_key(desc, schema_str)
+            cache_key = ReActSparkSQLAgent.cache_key(desc, ddl)
             cached_result = self._cache.lookup(key=cache_key)
             if cached_result is not None:
                 self.log("Using cached result for the transform:")
@@ -388,13 +413,13 @@ class SparkAI:
                 return replace_view_name(cached_result, temp_view_name)
             else:
                 sql_query = self._get_transform_sql_query_from_agent(
-                    temp_view_name, schema_str, sample_rows_str, desc
+                    temp_view_name, ddl, desc
                 )
                 self._cache.update(key=cache_key, val=canonize_string(sql_query))
                 return sql_query
         else:
             return self._get_transform_sql_query_from_agent(
-                temp_view_name, schema_str, sample_rows_str, desc
+                temp_view_name, ddl, desc
             )
 
     def transform_df(self, df: DataFrame, desc: str, cache: bool = True) -> DataFrame:

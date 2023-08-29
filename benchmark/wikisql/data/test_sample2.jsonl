@@ -1,0 +1,6 @@
+{"phase": 1, "table_id": "1-10083598-1", "question": "Where was Assen held?", "sql": {"sel": 2, "conds": [[3, 0, "Assen"]], "agg": 0}, "result": ["netherlands"]}
+{"phase": 1, "table_id": "1-10083598-1", "question": "What was the number of race that Kevin Curtain won?", "sql": {"sel": 0, "conds": [[4, 0, "Kevin Curtain"]], "agg": 3}, "result": [1]}
+{"phase": 1, "table_id": "1-1015521-2", "question": "Give me a list of all spanish officer titles that could receive recognition as group captain in english", "sql": {"sel": 2, "conds": [[3, 0, "Group Captain"]], "agg": 0}, "result": ["colonel"]}
+{"phase": 1, "table_id": "1-10408617-5", "question": "How many tariff codes have a bts retail price of 2p/min or inclusive?", "sql": {"sel": 1, "conds": [[2, 0, "2p/min or inclusive"]], "agg": 3}, "result": [1]}
+{"phase": 1, "table_id": "1-10586064-2", "question": "If % mcconnell is 47.17% what is the total number of mcconnell ?", "sql": {"sel": 4, "conds": [[5, 0, "47.17%"]], "agg": 3}, "result": [1]}
+{"phase": 1, "table_id": "1-10610087-5", "question": "what's the\u00a0original air date\u00a0with\u00a0title\u00a0 \"hell\"", "sql": {"sel": 5, "conds": [[2, 0, "\"Hell\""]], "agg": 0}, "result": ["august22,2006"]}
