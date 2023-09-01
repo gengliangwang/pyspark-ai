@@ -41,63 +41,95 @@ SQL_PROMPT = PromptTemplate(
 )
 
 
-SPARK_SQL_EXAMPLES = [
-    """QUESTION: Given a Spark temp view `spark_ai_temp_view_93bcf0` with the following columns:
-```
-Product STRING
-Amount BIGINT
-Country STRING
-```
-Write a Spark SQL query to retrieve from view `spark_ai_temp_view_93bcf0`: Pivot the fruit table by country and sum the amount for each fruit and country combination.
-Thought: Spark SQL does not support dynamic pivot operations, which are required to transpose the table as requested. I should get all the distinct values of column country.
-Action: query_sql_db
-Action Input: "SELECT DISTINCT Country FROM spark_ai_temp_view_93bcf0"
-Observation: USA, Canada, Mexico, China
-Thought: I can write a query to pivot the table by country and sum the amount for each fruit and country combination.
-Action: query_validation
-Action Input: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR Country IN ('USA', 'Canada', 'Mexico', 'China'))
-Observation: OK
-Thought:I now know the final answer.
-Final Answer: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR Country IN ('USA', 'Canada', 'Mexico', 'China'))"""
-    """QUESTION: Given a Spark temp view `spark_ai_temp_view_wl2sdf` with the following columns:
-```
-PassengerId INT
-Survived INT
-Pclass INT
-Name STRING
-Sex STRING
-Age DOUBLE
-SibSp INT
-Parch INT
-Ticket STRING
-Fare DOUBLE
-Cabin STRING
-Embarked STRING
-```
-Write a Spark SQL query to retrieve from view `spark_ai_temp_view_wl2sdf`: What's the name of the oldest survived passenger?
-Thought: I will query the Name and Age columns, filtering by Survived and ordering by Age in descending order.
-Action: query_validation
-Action Input: SELECT Name, Age FROM spark_ai_temp_view_wl2sdf WHERE Survived = 1 ORDER BY Age DESC LIMIT 1
-Observation: OK
-Thought:I now know the final answer.
-Final Answer: SELECT Name, Age FROM spark_ai_temp_view_wl2sdf WHERE Survived = 1 ORDER BY Age DESC LIMIT 1"""
-]
+def transform_input(view_name: str, columns: str, sample_rows: str, desc: str) -> str:
+    return """Given a Spark temp view `{view_name}` with the following columns:
+    ```
+    {columns}
+    ```
+    {sample_rows}
+    Write a Spark SQL query to get: {desc}
+    """.format(view_name=view_name, columns=columns, sample_rows=sample_rows, desc=desc)
 
-SPARK_SQL_SUFFIX = """\nQuestion: Given a Spark temp view `{view_name}` with the following columns:
-```
-{columns}
-```
-{sample_rows}
-Write a Spark SQL query to retrieve from view `{view_name}`: {desc}
-{agent_scratchpad}"""
-
-SPARK_SQL_PREFIX = """You are an assistant for writing professional Spark SQL queries. Given a question, you need to write a Spark SQL query to answer the question. The result is ALWAYS a Spark SQL query."""
-SPARK_SQL_PROMPT = PromptTemplate.from_examples(
-    examples=SPARK_SQL_EXAMPLES,
-    suffix=SPARK_SQL_SUFFIX,
-    input_variables=["view_name", "columns", "sample_rows", "desc", "agent_scratchpad"],
-    prefix=SPARK_SQL_PREFIX,
+input1 = transform_input(
+    view_name="spark_ai_temp_view_9dd220",
+    columns="""```
+Pick STRING
+Player STRING
+Position STRING
+Nationality STRING
+NHL team STRING
+College/junior/club team STRING
+```""",
+    sample_rows="""/*
+3 rows from spark_ai_temp_view_9dd220 table:
+Pick    Player  Position    Nationality NHL team    College/junior/club team
+183    Jason Boudrias    Forward    Canada   Florida Panthers    Laval Titan (QMJHL)
+184    Brad Englehart   CentreCanada    Anaheim Ducks   Kimball Union Academy (HS-New Hampshire)
+185    Rob Guinn    Defence    Canada   Edmonton Oilers  Newmarket Royals (OHL)
+*/""",
+    desc="What team is Keith Mccambridge on?"
 )
+
+input2 = transform_input(
+    view_name="spark_ai_temp_view_sdf210",
+    columns="""```
+#
+Episode
+Rating
+Share
+Rating/Share (18-49)
+Viewers (millions)
+Rank (Timeslot)
+Rank (Night)
+Rank (Week)
+```""",
+    sample_rows="""/*
+3 rows from spark_ai_temp_view_sdf210 table:
+#    Episode    Rating    Share    Rating/Share (18-49)    Viewers (millions)    Rank (Timeslot)    Rank (Night)    Rank (Week)
+1  "Faith"    7.3    12 4.2/12 11.83  1  3  10
+2  "Freedom"  6.0    10 3.6/10 9.38   2  5  11
+3  "Father Figure"    5.3    8  2.8/8  7.82   2  6  TBA
+*/""",
+    desc="what is the total number of rank where Episode is Freedom?"
+)
+
+input3 = transform_input(
+    view_name="spark_ai_temp_view_c04f4f",
+    columns="""```
+Week
+Dance/song
+Horwood
+Goodman
+Dixon
+Tonioli
+Total
+Result
+```""",
+    sample_rows="""/*
+3 rows from spark_ai_temp_view_c04f4f table:
+Week    Dance/song    Horwood    Goodman    Dixon    Tonioli    Total    Result
+1  Cha-Cha-Cha / Ain't No Mountain High Enough    7  8  8  8  31 N/A
+2  Foxtrot / She Said 7  8  8  8  31 Safe
+3  Quickstep / Dreaming Of You    8  7  8  8  31 Safe
+*/""",
+    desc="What score did Dixon give to the song \"samba / young hearts run free\", which was in second place?"
+)
+
+SQL_TRANSFORM_MESSAGES = [
+    {"role": "system", "content":
+        """You are a Spark SQL expert. 
+        You are given a Spark temp view and a description in plain English. 
+        You need to write a SQL query to transform the input temp view as per the description. The result is ALWAYS a Spark SQL query.
+        To get "the total number", use COUNT on the most appropriate column.
+        To answer a question of "Where", find the column name containing a location.
+        """},
+    {"role": "user", "content": input1},
+    {"role": "assistant", "content":"SELECT `NHL team` FROM spark_ai_temp_view_9dd220 WHERE Player = 'Keith Mccambridge'"},
+    {"role": "user", "content": input2},
+    {"role": "assistant", "content":"SELECT COUNT(`Rank (Timeslot)`) FROM spark_ai_temp_view_sdf210 WHERE Episode = '\"Freedom\"'"},
+    {"role": "user", "content": input3},
+    {"role": "assistant", "content":"SELECT `Dixon` FROM `1-1014319-1` WHERE `Dance/song` = 'samba / young hearts run free' AND `Result` = 'second place'"}
+]
 
 
 EXPLAIN_PREFIX = """You are an Apache Spark SQL expert, who can summary what a dataframe retrieves. Given an analyzed

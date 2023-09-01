@@ -5,12 +5,12 @@ import re
 from typing import Callable, List, Optional
 from urllib.parse import urlparse
 
+import openai
 import pandas as pd  # noqa: F401
 import requests
 import tiktoken
 from bs4 import BeautifulSoup
 from langchain import BasePromptTemplate, GoogleSearchAPIWrapper, LLMChain
-from langchain.agents import AgentExecutor
 from langchain.base_language import BaseLanguageModel
 from langchain.chat_models import ChatOpenAI
 from pyspark import Row
@@ -27,16 +27,15 @@ from pyspark_ai.prompt import (
     SEARCH_PROMPT,
     SQL_PROMPT,
     UDF_PROMPT,
-    VERIFY_PROMPT,
+    VERIFY_PROMPT, SQL_TRANSFORM_MESSAGES, transform_input,
 )
-from pyspark_ai.react_spark_sql_agent import ReActSparkSQLAgent
 from pyspark_ai.search_tool_with_cache import SearchToolWithCache
+from pyspark_ai.spark_utils import SparkUtils
 from pyspark_ai.temp_view_utils import (
     random_view_name,
     replace_view_name,
     canonize_string,
 )
-from pyspark_ai.tool import QuerySparkSQLTool, QueryValidationTool
 
 
 class SparkAI:
@@ -104,7 +103,6 @@ class SparkAI:
         self._search_llm_chain = self._create_llm_chain(prompt=SEARCH_PROMPT)
         self._sql_llm_chain = self._create_llm_chain(prompt=SQL_PROMPT)
         self._explain_chain = self._create_llm_chain(prompt=EXPLAIN_DF_PROMPT)
-        self._sql_agent = self._create_sql_agent()
         self._plot_chain = self._create_llm_chain(prompt=PLOT_PROMPT)
         self._verify_chain = self._create_llm_chain(prompt=VERIFY_PROMPT)
         self._udf_chain = self._create_llm_chain(prompt=UDF_PROMPT)
@@ -118,18 +116,6 @@ class SparkAI:
             return LLMChain(llm=self._llm, prompt=prompt)
 
         return LLMChainWithCache(llm=self._llm, prompt=prompt, cache=self._cache)
-
-    def _create_sql_agent(self):
-        tools = [
-            QuerySparkSQLTool(spark=self._spark),
-            QueryValidationTool(spark=self._spark),
-        ]
-        agent = ReActSparkSQLAgent.from_llm_and_tools(
-            llm=self._llm, tools=tools, verbose=True
-        )
-        return AgentExecutor.from_agent_and_tools(
-            agent=agent, tools=tools, verbose=True
-        )
 
     @staticmethod
     def _extract_view_name(query: str) -> str:
@@ -335,14 +321,14 @@ class SparkAI:
     def _get_transform_sql_query_from_agent(
         self, temp_view_name: str, schema: str, sample_rows_str: str, desc: str
     ) -> str:
-        llm_result = self._sql_agent.run(
-            view_name=temp_view_name,
-            columns=schema,
-            sample_rows=sample_rows_str,
-            desc=desc,
-        )
-        sql_query_from_response = AIUtils.extract_code_blocks(llm_result)[0]
-        return sql_query_from_response
+        # Assert that llm is instance of ChatOpenAI
+        assert isinstance(self._llm, ChatOpenAI)
+        openai_mode = self._llm.model_name
+        user_input = transform_input(view_name=temp_view_name, columns=schema, sample_rows=sample_rows_str, desc=desc)
+        messages = SQL_TRANSFORM_MESSAGES + [{"role": "user", "content": user_input}]
+        chat_completion = openai.ChatCompletion.create(model=openai_mode, messages=messages, functions=SparkUtils.get_functions(temp_view_name, schema))
+        print(chat_completion)
+        return AIUtils.extract_code_blocks(chat_completion.choices[0].message.content)[0]
 
     def _convert_row_as_tuple(self, row: Row) -> tuple:
         return tuple(map(str, row.asDict().values()))
@@ -370,6 +356,10 @@ class SparkAI:
             "*/\n"
         )
 
+    def _transform_cache_key(self, desc: str, columns: str) -> str:
+        """Return key for cache."""
+        return f"sql transform desc:{desc}, columns:{columns}"
+
     def _get_transform_sql_query(self, df: DataFrame, desc: str, cache: bool) -> str:
         temp_view_name = random_view_name()
         create_temp_view_code = CodeLogger.colorize_code(
@@ -381,7 +371,7 @@ class SparkAI:
         sample_rows_str = self._get_sample_spark_rows(df, temp_view_name)
 
         if cache:
-            cache_key = ReActSparkSQLAgent.cache_key(desc, schema_str)
+            cache_key = self._transform_cache_key(desc, schema_str)
             cached_result = self._cache.lookup(key=cache_key)
             if cached_result is not None:
                 self.log("Using cached result for the transform:")
@@ -411,6 +401,7 @@ class SparkAI:
                  on the input DataFrame.
         """
         sql_query = self._get_transform_sql_query(df, desc, cache)
+        print(sql_query)
         return self._spark.sql(sql_query)
 
     def explain_df(self, df: DataFrame, cache: bool = True) -> str:
